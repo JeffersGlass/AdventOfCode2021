@@ -4,24 +4,19 @@ with open("input.txt", 'r') as infile:
 def mostCommonDigitInPosition(data, position):
     return "1" if sum([int(num[position]) for num in data]) >= len(data)/2 else "0"
 
-#find Oxygen Rating
-oxyData = [d for d in inputdata]
-co2Data = [d for d in inputdata]
+def leastCommonDigitInPosition(data, position):
+    return "0" if sum([int(num[position]) for num in data]) >= len(data)/2 else "1"
 
-for i in range(len(inputdata[0])):
-    if len(oxyData) <= 1: break
-    MCD_o2 = mostCommonDigitInPosition(oxyData, i)
-    oxyData = [t for t in oxyData if t[i] == MCD_o2]
+def calculateRating(data, digitFunc):
+    for i in range(len(data[0])):
+        if len(data) <= 1: break
+        digitToMatch = digitFunc(data, i)
+        data = [t for t in data if t[i] == digitToMatch]
 
-for i in range(len(inputdata[0])):
-    if len(co2Data) <= 1: break
-    MCD_co2 = mostCommonDigitInPosition(co2Data, i)
-    co2Data = [t for t in co2Data if t[i] != MCD_co2]
+    if len(data) == 1: return int(data[0], 2)
+    else: raise ValueError(f"Function calculateRating should termiante with one element, instead was {data}")
 
-if len(oxyData) == 1: oxygenRating = int(oxyData[0], 2)
-else: raise ValueError(f"Oxygen Data should only have one element, instead was {oxyData}")
+oxygenRating = calculateRating(inputdata, mostCommonDigitInPosition)
+co2Rating = calculateRating(inputdata, leastCommonDigitInPosition)
 
-if len(co2Data) == 1: co2Rating = int(co2Data[0], 2)
-else: raise ValueError(f"CO2 Data should only have one element, instead was {co2Data}")
-
-print(f"Product: {oxygenRating * co2Rating= }")
+print(f"Product: {oxygenRating} * {co2Rating} {oxygenRating * co2Rating= }")
