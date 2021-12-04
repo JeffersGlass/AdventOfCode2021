@@ -25,11 +25,7 @@ def isBoardAWin(board, calledNums):
 
 #Score is (sum of uncalled numbers on board) * (last number called)
 def calcScore(board, calledNumbers):
-    print(f"All numbers {[num for line in board for num in line]}")
-    print(f"{sorted(calledNumbers)= }")
-    unusedNumbers = sorted([num for line in board for num in line if num not in calledNumbers])
-    print(f"{unusedNumbers= }")
-    print(f"{sum(unusedNumbers)= }")
+    unusedNumbers = [num for line in board for num in line if num not in calledNumbers]
     return sum(unusedNumbers) * calledNumbers[-1]
 
 def doWin(board, calledNumbers):
@@ -58,8 +54,6 @@ for i in range(len(allCalledNumbers)):
         print(f"found last board to win at index: {winningIndex}")
     elif hasWon.count(False) == 0:
         print(f"This board wins after {i} numbers called,",)
-        for b in boardCols:
-            print(b)
         doWin(boardCols[winningIndex], calledSoFar)
     else:
         print(f"{hasWon.count(False)} boards have not won")
