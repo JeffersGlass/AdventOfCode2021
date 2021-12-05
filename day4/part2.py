@@ -42,8 +42,6 @@ for i in range(len(allCalledNumbers)):
         if isBoardAWin(b, calledSoFar):
             hasWon[x] = True
             
-
-    
     for x, b in enumerate(boardCols):
         if isBoardAWin(b, calledSoFar):
             hasWon[x] = True
