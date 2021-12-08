@@ -41,7 +41,7 @@ for r in runs:
 
 
     b_or_e = [seg for seg in 'abcdefg' if len([h for h in hookupsWithLen[5] if seg in h]) == 1] #based on hookups with 5 segments on
-    r.segmentAssigns['e'] = [seg for seg in 'abcdefg' if seg in b_or_e and len([h for h in hookupsWithLen[6] if seg in h]) == 2][0] #based on hookups with 5 segments and knowing 'b' already
+    r.segmentAssigns['e'] = [seg for seg in 'abcdefg' if seg in b_or_e and len([h for h in hookupsWithLen[6] if seg in h]) == 2][0] 
     r.segmentAssigns['b'] = [seg for seg in 'abcdefg' if seg in b_or_e and seg != r.segmentAssigns['e']][0]
 
 
@@ -57,16 +57,6 @@ for r in runs:
     sum += rowSum
 
 print(f"Total of all rewired numbers: {sum}")
-
-
-
-
-
-
-
-
-
-
 
 """ 
 NumSegments     Digits      Notes
