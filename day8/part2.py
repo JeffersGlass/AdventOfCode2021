@@ -49,23 +49,11 @@ for r in runs:
     r.segmentAssigns['c'] = [seg for seg in 'abcdefg' if seg in c_or_f and len([h for h in hookupsWithLen[6] if seg in h]) == 2][0]
     r.segmentAssigns['f'] = [seg for seg in 'abcdefg' if seg in c_or_f and seg != r.segmentAssigns['c']][0]
 
-    #print(r)
-    #print("---Segment Mapping---")
-    #print("Scrambled Numbers: abcdefg")
-    #print("Actual Digits:     ", end = "")
-    #for letter in "abcdefg":
-    #    print([l for l in 'abcdefg' if r.segmentAssigns[l] == letter][0], end = "")
-    #print("")
-    #print("Output Digits:") 
     rowSum = 0
     for i, digit in enumerate(r.outputs):
-        #print(f">---\tDigit with messed up wiring: {digit}")
         rewiredDigit = ''.join([seg for seg in 'abcdefg' if r.segmentAssigns[seg] in digit])
         rewiredNum = numFromSegmentsOn(rewiredDigit)
         rowSum += rewiredNum * 10 ** (3-i)
-        #print(f"\tCorrected digit: {rewiredDigit}")
-        #print(f"\tCorresponding number: {numFromSegmentsOn(rewiredDigit)}")
-    #print("")
     sum += rowSum
 
 print(f"Total of all rewired numbers: {sum}")
