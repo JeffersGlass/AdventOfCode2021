@@ -3,10 +3,11 @@ from collections import defaultdict
 data = defaultdict(lambda:100)
 
 with open("input.txt", "r", encoding="utf-8") as infile:
-    for r, row in enumerate(infile.read().split('\n')):
-        numRows = r + 1
+    raw = infile.read().split('\n')
+    numRows = len(raw)
+    numCols = len(raw[0])
+    for r, row in enumerate(raw):
         for c, col in enumerate(row):
-            numCols = c + 1
             data[(r, c)] = int(col)
 
 total = 0
