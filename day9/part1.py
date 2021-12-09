@@ -10,7 +10,6 @@ with open("input.txt", "r", encoding="utf-8") as infile:
             data[(r, c)] = int(col)
 
 total = 0
-neighborDirections = [(0, -1), (1, 0), (0, 1), (-1, 0)]
 
 for r in range(numRows):
     for c in range(numCols):
