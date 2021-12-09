@@ -25,7 +25,7 @@ for b in basins:
         b.extend([(pos[0] + deltar, pos[1] + deltac) for deltar in [-1, 0, 1] for deltac in [-1, 0, 1] \
             if (deltar*deltac == 0 and deltar != deltac and \
                 data[(pos[0] + deltar, pos[1] + deltac)] != 9 and \
-                    (pos[0] + deltar, pos[1] + deltac) not in b)])
+                (pos[0] + deltar, pos[1] + deltac) not in b)])
     basinLengths.append(len(b))
 
 print(f"Solution: {prod(sorted(basinLengths, reverse=True)[:3])}")
