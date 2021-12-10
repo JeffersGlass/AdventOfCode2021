@@ -16,6 +16,7 @@ for line in data:
             lastLeft = stack.pop()
             if lefts.index(lastLeft) != rights.index(char):
                 totalScore += points[rights.index(char)]
+                break
         else: raise ValueError(f"Unkown character {char}")
     else:
         continue
