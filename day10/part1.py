@@ -19,6 +19,5 @@ for line in data:
         else: raise ValueError(f"Unkown character {char}")
     else:
         continue
-    break
 
 print(f"{totalScore= }")

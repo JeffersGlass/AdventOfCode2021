@@ -16,7 +16,6 @@ def autocompleteScore(stack):
     return score
 
 for line in data:
-    isCorrupt = False
     stack = list()
     for char in line:
         if char in lefts:
@@ -29,12 +28,4 @@ for line in data:
     else:
         scores.append(autocompleteScore(stack))
 
-""" print(autocompleteScore([ \
-    '<', \
-    '{', \
-    '(', \
-    '[' \
-])) """
-
-print(f"{scores= }")
 print(f"{median(scores)= }")
