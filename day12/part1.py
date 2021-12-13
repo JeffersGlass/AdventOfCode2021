@@ -17,24 +17,27 @@ while(len(routesInProgress) > 0):
     nextRoutes = list()
 
     for r in routesInProgress:
-        #Check if we're reached the end
         if r.currentRoom == 'end':
             completeRoutes.append(r)
         else:
+            #Get all path segments including hte current room
             nextPaths = [path for path in data if r.currentRoom in path]
             for p in nextPaths:
+                #Get the room this path segment would lead to (it's the room that's not our current room)
                 nextRoom = [item for item in p if item != r.currentRoom][0]
+                #Can't go to a little room twice
                 if nextRoom not in r.littleRoomsVisited:
                     newPath = r.pathSoFar + [p]
                     if nextRoom == nextRoom.lower():
+                        #If we're now going to be in a little room, add it to the list of little rooms we've visited
                         newLittleRooms = r.littleRoomsVisited + [nextRoom]
                     else:
+                        #Otherwise, the list of little rooms visited doens't change
                         newLittleRooms = r.littleRoomsVisited
                     nextRoutes.append(Route(pathSoFar = newPath, littleRoomsVisited = newLittleRooms, currentRoom = nextRoom))
                 else:
                     pass
 
     routesInProgress = nextRoutes
-    #input("Press enter")
 
 print(f"Total routes: {len(completeRoutes)}")
