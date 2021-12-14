@@ -6,8 +6,8 @@ with open("input.txt", "r", encoding="utf-8") as infile:
 @dataclass
 class Route():
     pathSoFar: list
-    currentRoom: str
-    littleRoomsVisited: dict #['a', numberOfTimesVisited]. This is the key change
+    currentCave: str
+    smallCavesVisited: dict #['a', numberOfTimesVisited]. This is the key change
 
 startingPaths = [path for path in data if 'start' in path] 
 routesInProgress = list()
@@ -17,50 +17,33 @@ for p in startingPaths:
     s = p.copy()
     s.remove('start')
     current = s[0]
-    if s[0] == s[0].lower(): littles = {'start':0, str(s[0]):1}
-    else: littles = {'start':0}
-    routesInProgress.append(Route(pathSoFar=','.join(route), littleRoomsVisited = littles, currentRoom = current))
+    if s[0] == s[0].lower(): smalls = {'start':0, str(s[0]):1}
+    else: smalls = {'start':0}
+    routesInProgress.append(Route(pathSoFar=','.join(route), smallCavesVisited = smalls, currentCave = current))
 
-#TODO Treat 'start' differently, adjust little-rooms-visited init
 completeRoutes = list()
 
 while(len(routesInProgress) > 0):
     nextRoutes = list()
-    #print("")
-    #print(f"ProcessingRoutes: {len(routesInProgress)}")
-    #print(f"CompletedRoutes:  {len(completeRoutes)}")
 
     for r in routesInProgress:
-        #print(f"Examining route {r}", end = "")
-        #Check if we're reached the end
-        if r.currentRoom == 'end':
-            #print(", which is complete!")
+        if r.currentCave == 'end':
             completeRoutes.append(r)
         else:
-            #print("")
-            nextPaths = [path for path in data if r.currentRoom in path and 'start' not in path]
+            nextPaths = [path for path in data if r.currentCave in path and 'start' not in path]
             for p in nextPaths:
-                #print(f"\tPossible next path: {p}", end = "")
-                nextRoom = [item for item in p if item != r.currentRoom][0]
-                #print(f" leading to room {nextRoom}", end ="")
+                nextCave = [item for item in p if item != r.currentCave][0]
 
-                if nextRoom not in r.littleRoomsVisited or (r.littleRoomsVisited[nextRoom] == 1 and not any([(v >= 2) for v in r.littleRoomsVisited.values()])):
-                    newPath = r.pathSoFar +',' + nextRoom #[p]
-                    newLittleRooms = r.littleRoomsVisited.copy()
-                    #print(" which is valid")
-                    if nextRoom == nextRoom.lower():
-                        if nextRoom in r.littleRoomsVisited:
-                            newLittleRooms[nextRoom] += 1
+                if nextCave not in r.smallCavesVisited or (r.smallCavesVisited[nextCave] == 1 and not any([(v >= 2) for v in r.smallCavesVisited.values()])):
+                    newPath = r.pathSoFar +',' + nextCave 
+                    newSmallCaves = r.smallCavesVisited.copy()
+                    if nextCave == nextCave.lower():
+                        if nextCave in r.smallCavesVisited:
+                            newSmallCaves[nextCave] += 1
                         else:
-                            newLittleRooms[nextRoom] = 1
-                    nextRoutes.append(Route(pathSoFar = newPath, littleRoomsVisited = newLittleRooms, currentRoom = nextRoom))
-                else:
-                    pass
-                    #print(" but this is invalid")
+                            newSmallCaves[nextCave] = 1
+                    nextRoutes.append(Route(pathSoFar = newPath, smallCavesVisited = newSmallCaves, currentCave = nextCave))
 
     routesInProgress = nextRoutes
-    #input("Press enter")
 
-#for r in completeRoutes:
-    #print(r)
 print(f"Total routes: {len(completeRoutes)}")
