@@ -17,26 +17,16 @@ for line in data[1].split('\n'):
     r = re.search(r'(..) -> (.)', line)
     rules[r.group(1)] = (r.group(1)[0] + r.group(2), r.group(2) + r.group(1)[1])
 
-
 def doStep(template):
-    print(f"Processing Template {template}")
     newTemplate = dict()
     for pairOfLetters in template:
-        #print(f"Processing letter pair {pairOfLetters}")
-
         nextPairOne = rules[pairOfLetters][0]
-        #print(f"Using rule {rules[pairOfLetters]}")
         newTemplate[nextPairOne] = (newTemplate[nextPairOne] + template[pairOfLetters]) if nextPairOne in newTemplate else template[pairOfLetters]
-        #print(f"Value of {nextPairOne} in next step will be {newTemplate[nextPairOne]}")
 
         nextPairTwo = rules[pairOfLetters][1]
-        #print(f"Using rule {rules[pairOfLetters]}")
         newTemplate[nextPairTwo] = (newTemplate[nextPairTwo] + template[pairOfLetters]) if nextPairTwo in newTemplate else template[pairOfLetters]
-        #print(f"Value of {nextPairTwo} in next step will be {newTemplate[nextPairTwo]}")
-        #print("")
     return newTemplate
 
-#TODO - include first and last letter, divide by 2
 def getLetterCounts(template):
     letterCounts = dict()
     for pair in template:
@@ -48,7 +38,6 @@ def getLetterCounts(template):
 
 for _ in range(40):
     template = doStep(template)
-    print(getLetterCounts(template))
 
 lCount = sorted(getLetterCounts(template).items(), key = lambda x: x[1])
 minimum, maximum = lCount[0][1], lCount[-1][1]
