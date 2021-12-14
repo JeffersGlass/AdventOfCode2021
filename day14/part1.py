@@ -1,6 +1,5 @@
 import re
 from collections import Counter
-from time import time
 
 with open("input.txt", "r", encoding="utf-8") as infile:
     data = infile.read().split("\n\n")
@@ -19,12 +18,8 @@ def doStep(template):
     
     return ''.join([val for pair in zip(template, additions) for val in pair] + [template[-1]])
 
-startTime = time()
-
 for i in range(10):
     template = doStep(template)
-
-#alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 counts = Counter(template)
 lCount = sorted(counts.items(), key=lambda x: x[1])
