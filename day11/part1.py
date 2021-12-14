@@ -34,9 +34,6 @@ def printGrid(printFlashes = False ):
 numSteps = 100
 numFlashes = 0
 
-printGrid()
-print("--")
-
 for step in range(numSteps):
     #Increment by 1
     for r in range(numRows):
@@ -67,7 +64,6 @@ for step in range(numSteps):
         for c in range(numCols):
             if grid[(r,c)].flashedThisStep: grid[(r,c)].intensity = 0
             grid[(r,c)].flashedThisStep = False
-
 
 print("--")
 print("final:")
