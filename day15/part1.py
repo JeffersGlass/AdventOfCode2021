@@ -46,9 +46,9 @@ def findPath(start, end):
     oldSelection = [0,0]
 
     while True:
-        #m = mapDisplay(maxX, maxY, risk, locationScores=locationScores, openPoints=openPoints, closedPoints=closedPoints, oldSelection = oldSelection)
-        #if m.retCode['exitcode'] == 1: exit()
-        #else: oldSelection = m.retCode['selection']
+        m = mapDisplay(maxX, maxY, risk, locationScores=locationScores, openPoints=openPoints, closedPoints=closedPoints, oldSelection = oldSelection)
+        if m.retCode['exitcode'] == 1: exit()
+        else: oldSelection = m.retCode['selection']
 
         costList = sorted([p for p in openPoints], key= lambda p:locationScores[p].f_cost)
         if len(costList) > 0: lowestCostPoint = costList[0]
@@ -77,6 +77,10 @@ def findPath(start, end):
     pathPoints = [scoringPoint]
     print("Calculating Path Score:")
     while locationScores[scoringPoint].parent != None:
+        m = mapDisplay(maxX, maxY, risk, locationScores=locationScores, openPoints=openPoints, closedPoints=closedPoints, pathPoints=pathPoints, oldSelection = oldSelection, pathLength=totalRisk)
+        if m.retCode['exitcode'] == 1: exit()
+        else: oldSelection = m.retCode['selection']
+
         totalRisk += risk[scoringPoint]
         scoringPoint = locationScores[scoringPoint].parent
         pathPoints.append(scoringPoint)

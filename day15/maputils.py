@@ -3,7 +3,7 @@ from time import sleep
 from astarutils import calc_h_cost
 
 class mapDisplay():
-    def __init__(self, maxX, maxY, risk, locationScores=[], openPoints=[], closedPoints=[], oldSelection=[0,0], end=None):
+    def __init__(self, maxX, maxY, risk, locationScores=[], openPoints=[], closedPoints=[], pathPoints = [], oldSelection=[0,0], end=None, pathLength = 0):
         self.maxX = maxX
         self.maxY = maxY
         self.risk = risk
@@ -11,6 +11,8 @@ class mapDisplay():
         self.openPoints = openPoints
         self.closedPoints = closedPoints
         self.selection = oldSelection
+        self.pathPoints = pathPoints
+        self.pathLength = pathLength
         self.retCode = {'exitcode':0, 'selection': self.selection }
         if end == None:
             self.end = (maxX-1, maxY-1)
@@ -24,17 +26,19 @@ class mapDisplay():
         #color pair 0 is white on black standard
         curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK) #1 - open points
         curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK) #2 - closed points
-        curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK) #21 - end point 
+        curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK) #3 - end point 
+        curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_BLACK) #4 -  final path
 
         curses.init_pair(10, curses.COLOR_BLACK, curses.COLOR_WHITE) #11 - open points highlighted
         curses.init_pair(11, curses.COLOR_BLACK, curses.COLOR_GREEN) #11 - open points highlighted
         curses.init_pair(12, curses.COLOR_BLACK, curses.COLOR_RED) #12 - closed points highlighted
-        curses.init_pair(13, curses.COLOR_BLACK, curses.COLOR_YELLOW) #21 - end point 
+        curses.init_pair(13, curses.COLOR_BLACK, curses.COLOR_YELLOW) #13 - end point 
+        curses.init_pair(14, curses.COLOR_BLACK, curses.COLOR_MAGENTA) #14 - final path
 
     
         self.map_pad = curses.newpad(maxY+1,maxX+1)
 
-        self.info_pad = curses.newpad(5, 40)
+        self.info_pad = curses.newpad(7, 40)
         self.info_pad.addstr(0,0,"Coords:")
         self.info_pad.addstr(1,0,"F_Cost:")
         self.info_pad.addstr(3,0,"H_Cost:")
@@ -84,11 +88,13 @@ class mapDisplay():
             for y in range (self.maxY):
                 if [x, y] == self.selection:
                     if (x,y) == self.end: color = curses.color_pair(13)
+                    elif (x,y) in self.pathPoints: color = curses.color_pair(14)
                     elif (x,y) in self.openPoints: color = curses.color_pair(11)
                     elif (x,y) in self.closedPoints: color = curses.color_pair(12)
                     else: color = curses.color_pair(10)
                 else:
                     if (x,y) == self.end: color = curses.color_pair(3)
+                    elif (x,y) in self.pathPoints: color= curses.color_pair(4)
                     elif (x,y) in self.openPoints: color = curses.color_pair(1)
                     elif (x,y) in self.closedPoints: color = curses.color_pair(2)
                     else: color = curses.color_pair(0)
@@ -112,8 +118,13 @@ class mapDisplay():
         #H Cost
         self.info_pad.addstr(3,10,"         ")
         self.info_pad.addstr(3,10,str(calc_h_cost(self.selection, self.end)))
+        if self.pathPoints != []:
+            self.info_pad.addstr(4,0,"Path Length:")
+            self.info_pad.addstr(5,0,str(self.pathLength))
+        else:
+            self.info_pad.addstr(0,0,"Searching...")
 
-        self.info_pad.refresh(0,0,0,40,4,80)
+        self.info_pad.refresh(0,0,0,40,5,80)
     
     def update_instruction_pad(self):
         self.instruction_pad.refresh(0,0,10,40,12,60)
