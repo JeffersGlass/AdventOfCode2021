@@ -1,8 +1,6 @@
 import curses
 from time import sleep
-
-def calc_h_cost(current, target):
-    return 5 * min(abs(target[0] - current[0]), abs(target[1] - current[1])) + 5 * abs((target[1] - current[1])-(target[0]-current[0]))
+from astarutils import calc_h_cost
 
 class mapDisplay():
     def __init__(self, maxX, maxY, risk, locationScores=[], openPoints=[], closedPoints=[], oldSelection=[0,0], end=None):
@@ -43,11 +41,12 @@ class mapDisplay():
 
         self.instruction_pad = curses.newpad(5,40)
         self.instruction_pad.addstr(0,0,"Arrow keys to move")
-        self.instruction_pad.addstr(1,0,"Enter to advance 1 step")
+        self.instruction_pad.addstr(1,0,"Enter to advance")
         self.instruction_pad.addstr(2,0,"Esc to hard quit")
-        self.instruction_pad.refresh(0,0,5,40,10,80)
-    
-        
+
+        self.open_pad = curses.newpad(200,20)
+        self.open_pad.addstr(0,0,"Open Points", curses.A_UNDERLINE)
+         
         curses.noecho()
         self.redraw()
 
@@ -77,7 +76,8 @@ class mapDisplay():
     def redraw(self): #pad, maxX, maxY, risk, locationScores=[], openPoints=[], closedPoints=[], selection=[0,0]):
         self.updateMapPad()
         self.update_info_pad()
-        self.instruction_pad.refresh(0,0,5,40,10,80)
+        self.update_instruction_pad()
+        self.update_open_pad()
 
     def updateMapPad(self):
         for x in range(self.maxX):
@@ -114,4 +114,14 @@ class mapDisplay():
         self.info_pad.addstr(3,10,str(calc_h_cost(self.selection, self.end)))
 
         self.info_pad.refresh(0,0,0,40,4,80)
+    
+    def update_instruction_pad(self):
+        self.instruction_pad.refresh(0,0,10,40,12,60)
+
+    def update_open_pad(self):
+        pointList = sorted(self.openPoints[:min(len(self.openPoints), 99)], key= lambda x:self.locationScores[x].f_cost)
+        for i, p in enumerate(pointList):
+            self.open_pad.addstr(i+1,0,f"{p} - {self.locationScores[p].f_cost}")
+        self.open_pad.refresh(0,0,0,70,10,100)
+
     

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any
 from termcolor import colored, cprint
 from maputils import mapDisplay
+from astarutils import calc_h_cost
 
 with open("input_test.txt", "r", encoding="utf-8") as infile:
     data = infile.read().split('\n')
@@ -18,9 +19,6 @@ maxX = len(data[0])
 class PointData():
     f_cost: int
     parent: Any
-
-def calc_h_cost(current, target):
-    return 5 * min(abs(target[0] - current[0]), abs(target[1] - current[1])) + 5 * abs((target[1] - current[1])-(target[0]-current[0]))
 
 def getNeighbors(point):
     nList = list()
@@ -48,15 +46,16 @@ def findPath(start, end):
     oldSelection = [0,0]
 
     while True:
-        m = mapDisplay(maxX, maxY, risk, locationScores=locationScores, openPoints=openPoints, closedPoints=closedPoints, oldSelection = oldSelection)
-        if m.retCode['exitcode'] == 1: exit()
-        else: oldSelection = m.retCode['selection']
+        #m = mapDisplay(maxX, maxY, risk, locationScores=locationScores, openPoints=openPoints, closedPoints=closedPoints, oldSelection = oldSelection)
+        #if m.retCode['exitcode'] == 1: exit()
+        #else: oldSelection = m.retCode['selection']
+
         costList = sorted([p for p in openPoints], key= lambda p:locationScores[p].f_cost)
         if len(costList) > 0: lowestCostPoint = costList[0]
         else: break #???
 
-        printMap(openPoints, closedPoints, lowestCostPoint)
-        print(f"Cheapest next point is {lowestCostPoint}:{locationScores[lowestCostPoint]}")
+        #printMap(openPoints, closedPoints, lowestCostPoint)
+        #print(f"Cheapest next point is {lowestCostPoint}:{locationScores[lowestCostPoint]}")
         if lowestCostPoint == end: break 
 
         closedPoints.append(lowestCostPoint)
@@ -64,7 +63,7 @@ def findPath(start, end):
 
         for newPoint in getNeighbors(lowestCostPoint):
             if newPoint not in closedPoints:
-                print(f"Exploring neighbor {newPoint} of {lowestCostPoint}")
+                #print(f"Exploring neighbor {newPoint} of {lowestCostPoint}")
                 if newPoint not in openPoints: #  or (risk[newPoint] + cost(lowestCostPoint, closedPoints[lowestCostPoint])) < 100000000: #TODO or new path to neighbor is cheaper
                     newFCost = locationScores[lowestCostPoint].f_cost + calc_h_cost(newPoint, end) + risk[newPoint]
                     locationScores[newPoint] = PointData(f_cost=newFCost, parent = lowestCostPoint)
