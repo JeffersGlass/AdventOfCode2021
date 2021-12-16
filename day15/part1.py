@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 from termcolor import colored, cprint
+from maputils import mapDisplay
 
 with open("input_test.txt", "r", encoding="utf-8") as infile:
     data = infile.read().split('\n')
@@ -15,22 +16,19 @@ maxX = len(data[0])
 
 @dataclass
 class PointData():
-    g_cost: int
+    f_cost: int
     parent: Any
 
-def h_cost(point):
-    return 14 * min(point[0], point[1]) + 10 * abs(point[1]-point[0])
+def calc_h_cost(current, target):
+    return 5 * min(abs(target[0] - current[0]), abs(target[1] - current[1])) + 5 * abs((target[1] - current[1])-(target[0]-current[0]))
 
 def getNeighbors(point):
     nList = list()
-    for x in [-1,0,1]:
-        for y in [-1,0,1]:
-            if (0 <= point[0] + x < maxX) and (0 <= point[1] + y < maxY): nList.append((point[0] + x, point[1] + y))
+    for delta in [(-1,0),(0,1),(1,0),(0,-1)]:
+        testPoint = (point[0]+delta[0], point[1] + delta[1])
+        if (0 <= testPoint[0] < maxX) and (0 <= testPoint[1] < maxY): nList.append(testPoint)
     
     return nList
-
-def cost(location: tuple, point: PointData):
-    return point.g_cost + h_cost(location)
 
 def printMap(openPoints, closedPoints, activePoint):
     for y in range(maxY):
@@ -43,38 +41,49 @@ def printMap(openPoints, closedPoints, activePoint):
         print("")
 
 def findPath(start, end):
-    openPoints = {start: PointData(g_cost=0, parent=None)}
-    closedPoints = dict()
+    locationScores = {start: PointData(f_cost = 0, parent=None)}
+    openPoints = [start]
+    closedPoints = list()
+
+    oldSelection = [0,0]
 
     while True:
-        input("")
-        costList = sorted([p for p in openPoints], key= lambda p:cost(p, openPoints[p]))
+        m = mapDisplay(maxX, maxY, risk, locationScores=locationScores, openPoints=openPoints, closedPoints=closedPoints, oldSelection = oldSelection)
+        if m.retCode['exitcode'] == 1: exit()
+        else: oldSelection = m.retCode['selection']
+        costList = sorted([p for p in openPoints], key= lambda p:locationScores[p].f_cost)
         if len(costList) > 0: lowestCostPoint = costList[0]
         else: break #???
 
         printMap(openPoints, closedPoints, lowestCostPoint)
-        print(f"Cheapest next point is {lowestCostPoint}:{openPoints[lowestCostPoint]}")
-        #input("Press enter")
+        print(f"Cheapest next point is {lowestCostPoint}:{locationScores[lowestCostPoint]}")
         if lowestCostPoint == end: break 
 
-
-        closedPoints[lowestCostPoint] = openPoints[lowestCostPoint]
-        del openPoints[lowestCostPoint]
+        closedPoints.append(lowestCostPoint)
+        openPoints.remove(lowestCostPoint)
 
         for newPoint in getNeighbors(lowestCostPoint):
             if newPoint not in closedPoints:
                 print(f"Exploring neighbor {newPoint} of {lowestCostPoint}")
-                if newPoint not in openPoints or (risk[newPoint] + cost(lowestCostPoint, closedPoints[lowestCostPoint])) < 100000000: #TODO or new path to neighbor is cheaper
-                    newFCost = closedPoints[lowestCostPoint].g_cost + risk[newPoint]
-                    newData = PointData(g_cost=newFCost, parent = lowestCostPoint)
-                    openPoints[newPoint] = newData #should always happen?
-
+                if newPoint not in openPoints: #  or (risk[newPoint] + cost(lowestCostPoint, closedPoints[lowestCostPoint])) < 100000000: #TODO or new path to neighbor is cheaper
+                    newFCost = locationScores[lowestCostPoint].f_cost + calc_h_cost(newPoint, end) + risk[newPoint]
+                    locationScores[newPoint] = PointData(f_cost=newFCost, parent = lowestCostPoint)
+                    if newPoint not in openPoints:
+                        openPoints.append(newPoint)
             else:
                 pass
 
-    print("DONE!")
-    while True:
-        p = 1
+    scoringPoint = lowestCostPoint
+    totalRisk = 0
+    pathPoints = [scoringPoint]
+    print("Calculating Path Score:")
+    while locationScores[scoringPoint].parent != None:
+        totalRisk += risk[scoringPoint]
+        scoringPoint = locationScores[scoringPoint].parent
+        pathPoints.append(scoringPoint)
+
+    printMap(pathPoints, [], [])
+    print(f"{totalRisk= }")
 
 if __name__ == '__main__':
-    findPath((0,0), (10,10))
+    findPath((0,0), (9,9))
