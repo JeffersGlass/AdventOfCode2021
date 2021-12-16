@@ -10,13 +10,24 @@ showMaps = False
 with open("input.txt", "r", encoding="utf-8") as infile:
     data = infile.read().split('\n')
 
-risk = dict()
+originalRisk = dict()
 for y, line in enumerate(data):
     for x, val in enumerate(line):
-        risk[(x, y)] = int(val)
+        originalRisk[(x, y)] = int(val)
 
-maxY = len(data)
-maxX = len(data[0])
+original_maxY = len(data)
+original_maxX = len(data[0])
+
+risk = dict()
+for x_copy in range(5):
+    for y_copy in range(5):
+        for i in range(original_maxX):
+            for j in range(original_maxY):
+                risk[(x_copy*original_maxX + i, y_copy*original_maxY + j)] = 1
+
+
+maxY = original_maxY * 5
+maxX = original_maxX * 5
 
 @dataclass
 class PointData():

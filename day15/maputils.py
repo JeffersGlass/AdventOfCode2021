@@ -41,6 +41,7 @@ class mapDisplay():
         self.info_pad = curses.newpad(7, 40)
         self.info_pad.addstr(0,0,"Coords:")
         self.info_pad.addstr(1,0,"F_Cost:")
+        self.info_pad.addstr(2,0,"G_Cost:")
         self.info_pad.addstr(3,0,"H_Cost:")
 
         self.instruction_pad = curses.newpad(5,40)
@@ -111,9 +112,11 @@ class mapDisplay():
         #F Cost
         self.info_pad.addstr(1,10,"          ")
         if tuple(self.selection) in self.locationScores:
-            self.info_pad.addstr(1,10,str(self.locationScores[tuple(self.selection)].f_cost))
+            self.info_pad.addstr(1,10,str(self.locationScores[tuple(self.selection)].f_cost) + "      ")
+            self.info_pad.addstr(2,10,str(self.locationScores[tuple(self.selection)].g_cost) + "      ")
         else:
             self.info_pad.addstr(1,10,"Unknown")
+            self.info_pad.addstr(2,10,"Unknown")
 
         #H Cost
         self.info_pad.addstr(3,10,"         ")
@@ -122,7 +125,7 @@ class mapDisplay():
             self.info_pad.addstr(4,0,"Path Length:")
             self.info_pad.addstr(5,0,str(self.pathLength))
         else:
-            self.info_pad.addstr(0,0,"Searching...")
+            self.info_pad.addstr(4,0,"Searching...")
 
         self.info_pad.refresh(0,0,0,40,5,80)
     
