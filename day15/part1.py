@@ -3,7 +3,6 @@ from typing import Any
 from termcolor import colored, cprint
 from maputils import mapDisplay
 from astarutils import calc_h_cost
-from time import time
 
 showMaps = False
 
@@ -21,7 +20,6 @@ maxX = len(data[0])
 @dataclass
 class PointData():
     f_cost: int
-    g_cost: int
     parent: Any
 
 def getNeighbors(point):
@@ -43,9 +41,9 @@ def printMap(openPoints, closedPoints, activePoint):
         print("")
 
 def findPath(start, end):
-    locationScores = {start: PointData(f_cost = 0, g_cost=0, parent=None)}
-    openPoints = [start]
-    closedPoints = list()
+    locationScores = {start: PointData(f_cost = 0, parent=None)}
+    openPoints = {start}
+    closedPoints = set()
 
     oldSelection = [0,0]
 
@@ -63,18 +61,17 @@ def findPath(start, end):
         #print(f"Cheapest next point is {lowestCostPoint}:{locationScores[lowestCostPoint]}")
         if lowestCostPoint == end: break 
 
-        closedPoints.append(lowestCostPoint)
+        closedPoints.add(lowestCostPoint)
         openPoints.remove(lowestCostPoint)
 
         for newPoint in getNeighbors(lowestCostPoint):
             if newPoint not in closedPoints:
                 #print(f"Exploring neighbor {newPoint} of {lowestCostPoint}")
                 if newPoint not in openPoints: #  or (risk[newPoint] + cost(lowestCostPoint, closedPoints[lowestCostPoint])) < 100000000: #TODO or new path to neighbor is cheaper
-                    newGCost = locationScores[lowestCostPoint].g_cost + risk[newPoint]
-                    newFCost = newGCost# + calc_h_cost(newPoint, end)
-                    locationScores[newPoint] = PointData(f_cost=newFCost, g_cost=newGCost, parent = lowestCostPoint)
+                    newFCost = locationScores[lowestCostPoint].f_cost + calc_h_cost(newPoint, end) + risk[newPoint]
+                    locationScores[newPoint] = PointData(f_cost=newFCost, parent = lowestCostPoint)
                     if newPoint not in openPoints:
-                        openPoints.append(newPoint)
+                        openPoints.add(newPoint)
             else:
                 pass
 

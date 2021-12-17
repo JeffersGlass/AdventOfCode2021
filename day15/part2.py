@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import Any
-from termcolor import colored, cprint
 from maputils import mapDisplay
 from astarutils import calc_h_cost
 from time import time
@@ -23,16 +22,15 @@ for x_copy in range(5):
     for y_copy in range(5):
         for i in range(original_maxX):
             for j in range(original_maxY):
-                risk[(x_copy*original_maxX + i, y_copy*original_maxY + j)] = 1
-
+                risk[(x_copy*original_maxX + i, y_copy*original_maxY + j)] = (originalRisk[(i,j)] + x_copy + y_copy - 1) % 9 + 1
 
 maxY = original_maxY * 5
 maxX = original_maxX * 5
+totalPoints = maxY * maxY
 
 @dataclass
 class PointData():
     f_cost: int
-    g_cost: int
     parent: Any
 
 def getNeighbors(point):
@@ -43,22 +41,16 @@ def getNeighbors(point):
     
     return nList
 
-def printMap(openPoints, closedPoints, activePoint):
-    for y in range(maxY):
-        for x in range(maxX):
-            val = risk[(x,y)]
-            if (x,y) == activePoint: cprint(val, 'grey', 'on_green', end="")
-            elif (x,y) in closedPoints: cprint(val, 'red', end="")
-            elif (x,y) in openPoints: cprint(val, 'green', end="")
-            else:cprint(val, 'white', end="")
-        print("")
-
 def findPath(start, end):
-    locationScores = {start: PointData(f_cost = 0, g_cost=0, parent=None)}
-    openPoints = [start]
-    closedPoints = list()
+    locationScores = {start: PointData(f_cost = 0, parent=None)}
+    openPoints = {start}
+    closedPoints = set()
 
     oldSelection = [0,0]
+    stepPrint = 1000
+    steps = 0
+
+    startTime = time()
 
     while True:
         if showMaps:
@@ -74,18 +66,18 @@ def findPath(start, end):
         #print(f"Cheapest next point is {lowestCostPoint}:{locationScores[lowestCostPoint]}")
         if lowestCostPoint == end: break 
 
-        closedPoints.append(lowestCostPoint)
+        closedPoints.add(lowestCostPoint)
         openPoints.remove(lowestCostPoint)
+        if (steps := steps+1) % stepPrint == 0: print(f"After {steps} step: {len(closedPoints)= } {len(openPoints)= } of {totalPoints} after {round(time() - startTime, 2)}")
 
         for newPoint in getNeighbors(lowestCostPoint):
             if newPoint not in closedPoints:
                 #print(f"Exploring neighbor {newPoint} of {lowestCostPoint}")
                 if newPoint not in openPoints: #  or (risk[newPoint] + cost(lowestCostPoint, closedPoints[lowestCostPoint])) < 100000000: #TODO or new path to neighbor is cheaper
-                    newGCost = locationScores[lowestCostPoint].g_cost + risk[newPoint]
-                    newFCost = newGCost# + calc_h_cost(newPoint, end)
-                    locationScores[newPoint] = PointData(f_cost=newFCost, g_cost=newGCost, parent = lowestCostPoint)
+                    newFCost = locationScores[lowestCostPoint].f_cost + calc_h_cost(newPoint, end) + risk[newPoint]
+                    locationScores[newPoint] = PointData(f_cost=newFCost, parent = lowestCostPoint)
                     if newPoint not in openPoints:
-                        openPoints.append(newPoint)
+                        openPoints.add(newPoint)
             else:
                 pass
 
