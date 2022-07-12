@@ -1,104 +1,142 @@
-from dataclasses import dataclass
+from __future__ import annotations
+from enum import Enum, auto
+import logging
+from multiprocessing.sharedctypes import Value
 
-def packetVersion(packetData):
-    dataBits = packetData[:3]
-    return int(dataBits, 2)
+class PacketType(Enum):
+    LITERAL = auto()
+    OPERATOR = auto()
 
-def packetID(packetData):
-    idBits = packetData[3:6]
-    return int(idBits, 2)
-
-def lengthTypeID(packetData):
-    id = int(packetData[6])
-    if id not in [0,1]: raise ValueError(f"Expected length type id 0 or 1, calculated {id= }")
-    return id
-
-def getBitLength(packetData): #assumes lengthTypeID == 0
-    return int(packetData[7:7+15], 2)
-
-def numSubPackets(packetData): #assumes lengthTypeID == 1
-    return int(packetData[7:7+11], 2)
-
-def packetLiteralValue(packetData):
-    valueBits = packetData[6:]
-    #print(f"Translating binary chunks with full string {valueBits= }")
-    if len(valueBits) %5 != 0: valueBits = valueBits[:-1* (len(valueBits)%5)] #chop off trailing bits
-    #print(f"After truncation this is {valueBits= }")
-    valueString = ""
-    for chunk in range(int(len(valueBits)/5)):
-        newChunk = valueBits[(chunk*5)+1:(chunk*5)+5]
-        valueString += newChunk
-        #print(f"After adding {newChunk= } to value, {valueString=}")
-    return int(valueString, 2)
-
-#TODO: split using inital bit of packets data
-def splitPacketsByBitCount(packetData, numBits):
-    packetList = []
-    chunkIndex = 0
-    while len(packetData) > 0:
-        header, tempData = packetData[:6], packetData[6:]
-        #while tempData[0]
-    return packetList
-
-#TODO: split using inital bit of packets data
-def splitPacketsByPacketNum(packetData, numPackets):
-    packetStartIndices = [0]
-    trackingIndex = 0
-    while len(packetStartIndices) < numPackets:
-        trackingIndex += 7
-        chunkIndex = 0
-        if int(packetData[trackingIndex + chunkIndex]) == 0:
-            packetStartIndices += trackinGIndex + chunkIndex
-        else:
-            pass
-
-    return packetList
+class LengthType(Enum):
+    BIT_LENGTH = auto()
+    SUBPACKET_LENGTH=auto()
 
 class Packet():
-    def __init__(self, data):
-        self.version = packetVersion(data)
-        self.typeID = packetID(data)
-        self.content = data[6:]
-     
-    def __str__(self):
-        return f"{self.__class__} object at {id(self)} {self.version= } {self.typeID= } {self.content= }"
+    def __init__(self, version: int, type_id: int, data: str):
+        self.version : int = version
+        self.type_id : int = type_id
+        self.data : str = data
+        self.subpackets = []
 
-class operatorPacket(Packet):
-    def __init__(self, data):
-        super().__init__(data)
+    def __repr__(self):
+        return(f"Packet(version={self.version}, type_id={self.type_id}, data=(0b){self.data})")
+    
+    @classmethod 
+    def from_hex(cls, hex_string: str) -> Packet:
+        logging.info(f"Creating new Packet from hex_string {hex_string}")
+        data = ""
+        for char in hex_string:
+            bin_string = bin(int(char, 16))[2:].rjust(4,"0")
+            data+= bin_string
+            #logging.debug(f"Added characters {bin_string} from character {char}")
+        #logging.debug(f"Final binary string is {data}")
+        new_obj = cls(version = int(data[:3], 2), type_id = int(data[3:6], 2), data = data[6:])
+        logging.debug(f"Created new Packet from Hex: {new_obj}")
+        return new_obj
 
-        self.lengthTypeID = int(self.content[0])
-        if self.lengthTypeID == 0:
-            self.length = int(self.content[1:1+15], 2)
-        elif self.lengthTypeID == 1:
-            self.length = int(self.content[1:1+11], 2)
-        else: raise ValueError(f"Expected length type ID 0 or 1, got {self.lengthTypeID}")
+    @classmethod
+    def from_bin(cls, bin_string: str) -> Packet:
+        logging.info(f"Creating new packet from hex_string {bin_string}")
+        return cls(version = int(bin_string[:3], 2), type_id = int(bin_string[3:6], 2), data = bin_string[6:])
 
-        self.subPackets = list()
+    @property
+    def packet_type(self) -> PacketType:
+        if self.type_id == 4: return PacketType.LITERAL
+        else: return PacketType.OPERATOR
 
-    def __str__(self):
-        return super().__str__() + f" {self.lengthTypeID= } {self.length= }"
+    @property
+    def length_type(self) -> LengthType:
+        if self.packet_type != PacketType.OPERATOR: raise TypeError("Only Operator Packets have a length type")
 
+        if self.data[0] == "0": return LengthType.BIT_LENGTH
+        else: return LengthType.SUBPACKET_LENGTH
 
+    @property
+    def value(self) -> int:
+        if self.type_id == 4: #Literal Value
+            binary_data = str(bin(self.data))[2:]
+            padded_data = binary_data.ljust((4 - len(binary_data) % 4) % 4, "0")
+            bits = []
+            while padded_data[0] == '1':
+                bits.extend(padded_data[1:5])
+                padded_data = padded_data[5:]
 
-def parseMainPacket(s):
-    firstPacketType = packetID(s)
-    if firstPacketType == 4: return Packet(s)
-    else:
-        p = operatorPacket(s)
-        if p.lengthTypeID == 1:
-            while len(p.subPackets) < p.length:
+            #Capture one more group with first digit 0
+            bits.extend(padded_data[1:5])
+            padded_data = padded_data[5:]
 
+            binary_string = "".join(bits)
+            return int(binary_string, 2)
+            
+        else:
+            raise NotImplementedError((f"No value computed for Packet with type_id {self.type_id}"))
 
-    return p
-        
-if __name__ == '__main__':
-    with open("input_test.txt", "r", encoding="utf-8") as infile:
-        data = infile.read().strip()
+    def get_subpackets(self) -> list[Packet] | None:
+        if self.packet_type == PacketType.LITERAL:
+            print("This is a literal packet, no subpackets to get")
+            return None
+        else:
+            if self.length_type == LengthType.BIT_LENGTH:    
+                subpacket_bit_length = int(self.data[1:16], 2) #skip first number as that's the length type ID
+                subpacket_bits = self.data[16:16+subpacket_bit_length]
+                logging.debug(f"This packet with length_type={self.length_type} has a subpacket length of {subpacket_bit_length}")
+                return Packet.parse_subpackets_with_bitlength(subpacket_bits)
+            elif self.length_type == LengthType.SUBPACKET_LENGTH:
+                subpacket_number = int(self.data[1:12], 2)
+                subpacket_bits = self.data[12:]
+                logging.debug(f"This packet with length_type={self.length_type} has {subpacket_number} subpackets")
+                return Packet.parse_subpackets_with_num(subpacket_bits, subpacket_number)
+            else:
+                raise ValueError(f"length_type must be a valid LengthType, was {self.length_type}")
 
-    numString = int(data, 16)
-    size = len(data) * 4
-    binaryData = f'{numString:0>{size}b}'
+    @staticmethod
+    def parse_subpackets_with_num(data, num) -> list(Packet):
+        logging.info(f"Parsing {num} subpackets from {data}")
+        if num == 1:
+            return [Packet.from_bin(data)]
+        elif num > 0:
+            pass
+        else:
+            raise ValueError("Number of subpackets must be 1 or greater")
 
-    basePacket = parseMainPacket(binaryData)
-    print(basePacket)
+    @staticmethod
+    def parse_subpackets_with_bitlength(data) -> list(Packet):
+        subpackets = []
+        bits = data
+        while len(bits) > 0:
+            logging.debug(f"Looking for first packet in {bits}")
+            if int(bits[:3], 2) == 4: #literal value
+                logging.debug("Found a literal packet, parsing...")
+                length_of_first_packet = Packet.find_length_of_literal_first_packet(bits)
+            else: #operator packet
+                if int(data[0], 2) == 0: #number of bits specified
+                    logging.debug("Found a packet with a specified bitlength of subpackets, parsing...")
+                    length_of_first_packet = int(data[1, 1+15], 2)
+                    subpacket = Packet.from_bin(data[:length_of_first_packet])
+                    logging.debug(f"Created new packet from {length_of_first_packet} bits")
+                    logging.debug(subpacket)
+                    subpackets.append(subpacket)
+                    bits = bits[length_of_first_packet:]
+                else:
+                    logging.debug("Found a packet with specified number of subpackets, parsing...")
+                    length_of_first_packet = len(bits)
+                    num_subs = int(data[1:1+11], 2)
+                    subpackets.append(Packet.parse_subpackets_with_num(data, num_subs))
+                    break
+
+        return subpackets
+
+            
+
+    @staticmethod
+    def find_length_of_literal_first_packet(data):
+        pass
+               
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
+
+    data = "38006F45291200"
+
+    p = Packet.from_hex(data)
+    print(p.get_subpackets())
