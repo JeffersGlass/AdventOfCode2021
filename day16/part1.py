@@ -28,8 +28,6 @@ class Packet():
         for char in hex_string:
             bin_string = bin(int(char, 16))[2:].rjust(4,"0")
             data+= bin_string
-            #logging.debug(f"Added characters {bin_string} from character {char}")
-        #logging.debug(f"Final binary string is {data}")
         new_obj = cls(version = int(data[:3], 2), type_id = int(data[3:6], 2), data = data[6:])
         logging.debug(f"Created new Packet from Hex: {new_obj}")
         return new_obj
